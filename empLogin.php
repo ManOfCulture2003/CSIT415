@@ -1,15 +1,7 @@
 <?php
 session_start();
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "libraryDB";
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once 'database.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
@@ -32,6 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
         $_SESSION['email'] = $email;
+        session_regenerate_id(true);
+        unset($_SESSION['member_id']);
         $_SESSION['name'] = $user['name'];
         $_SESSION['is_librarian'] = true;
 
