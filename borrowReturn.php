@@ -3,13 +3,13 @@ session_start();
 require_once 'database.php';
 
 // Ensure user is logged in
-if (!isset($_SESSION['member_id']) && !isset($_SESSION['name'])) {
+if (!isset($_SESSION['member_id']) && empty($_SESSION['is_librarian'])) {
     header('Location: userLogin.php');
     exit();
 }
 
 $isMember = isset($_SESSION['member_id']);
-$isLibrarian = isset($_SESSION['name']);
+$isLibrarian = !empty($_SESSION['is_librarian']);
 $member_id = $isMember ? $_SESSION['member_id'] : null;
 $message = "";
 
@@ -219,7 +219,7 @@ if ($isMember) {
                 }
                 ?>
             <?php else: ?>
-                <?= $row['return_date'] ?? '—' ?>
+                <?= htmlspecialchars($row['return_date'] ?? '—', ENT_QUOTES, 'UTF-8') ?>
             <?php endif; ?>
         </td>
         <?php if ($isMember): ?>
