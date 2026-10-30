@@ -1,0 +1,49 @@
+name: Library demo data and PHP checks
+
+on:
+  push:
+    branches: [main, "forge/**"]
+  pull_request:
+
+jobs:
+  fixture-and-php:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: local-only-ci-root
+          MARIADB_DATABASE: librarydb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      MYSQL_PWD: local-only-ci-root
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate public fixture guardrails
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Install database client and PHP CLI
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mariadb-client php-cli
+      - name: Check PHP syntax
+        run: find . -maxdepth 1 -name "*.php" -print0 | xargs -0 -n1 php -l
+      - name: Import into disposable MariaDB database
+        run: mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root librarydb < librarydb.sql
+      - name: Verify counts and relationships
+        run: |
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM books')" = "3"
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM members')" = "2"
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM librarians')" = "1"
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM transactions')" = "2"
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM fines')" = "1"
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = "librarydb"')" = "8"
+          test "$(mariadb --protocol=TCP -h 127.0.0.1 -P 3306 -u root -N -B librarydb -e 'SELECT COUNT(*) FROM transactions t LEFT JOIN members m ON t.member_id = m.member_id LEFT JOIN books b ON t.book_id = b.book_id WHERE m.member_id IS NULL OR b.book_id IS NULL')" = "0"
