@@ -3,7 +3,7 @@ session_start();
 require_once 'database.php';
 
 // librarians can edit
-if (isset($_SESSION['name']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+if (!empty($_SESSION['is_librarian']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['submit_answer']) && !empty($_POST['question_id']) && !empty($_POST['answer'])) {
         $question_id = $_POST['question_id'];
         $answer = $_POST['answer'];

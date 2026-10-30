@@ -102,12 +102,12 @@ include 'navbar.php';
                         echo "</form>";
                         echo "</div>";
                         echo "<div class='book-info'>";
-                        echo "<strong>$title</strong><br>by $authors<br>";
-                        echo "<em>Publisher:</em> $publisher<br>";
-                        echo "<em>Published:</em> $publishedDate<br>";
-                        echo "<em>Pages:</em> $pageCount<br>";
-                        echo "<em>Categories:</em> $categories<br>";
-                        echo "<p>" . substr(strip_tags($description), 0, 300) . "...</p>";
+                        echo "<strong>" . htmlspecialchars($title, ENT_QUOTES, "UTF-8") . "</strong><br>by " . htmlspecialchars($authors, ENT_QUOTES, "UTF-8") . "<br>";
+                        echo "<em>Publisher:</em> " . htmlspecialchars($publisher, ENT_QUOTES, "UTF-8") . "<br>";
+                        echo "<em>Published:</em> " . htmlspecialchars($publishedDate, ENT_QUOTES, "UTF-8") . "<br>";
+                        echo "<em>Pages:</em> " . htmlspecialchars((string)$pageCount, ENT_QUOTES, "UTF-8") . "<br>";
+                        echo "<em>Categories:</em> " . htmlspecialchars($categories, ENT_QUOTES, "UTF-8") . "<br>";
+                        echo "<p>" . htmlspecialchars(substr(strip_tags($description), 0, 300), ENT_QUOTES, "UTF-8") . "...</p>";
                         echo "</div></div>";
                     }
 

@@ -23,6 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
+        session_regenerate_id(true);
         $_SESSION['email'] = $email;
         $_SESSION['name'] = $user['name'] ?? '';
         $_SESSION['member_id'] = $user['member_id'];
@@ -101,7 +102,7 @@ $conn->close();
 <body>
     <div class="login-container">
         <h2>User Login</h2>
-        <?php if (!empty($_GET['error'])) echo "<p class='error'>{$_GET['error']}</p>"; ?>
+        <?php if (!empty($_GET['error'])) echo "<p class='error'>" . htmlspecialchars($_GET['error'], ENT_QUOTES, 'UTF-8') . "</p>"; ?>
         <form action="" method="POST">
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
